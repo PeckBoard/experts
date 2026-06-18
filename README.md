@@ -1,45 +1,54 @@
 # PeckBoard Experts Plugin
 
 The **experts** feature of Peckboard — knowledge / question / PM experts, their
-MCP tools, data, and UI — packaged as a WASM plugin.
+MCP tools, data, and authenticated UI endpoints — packaged as an
+[Extism](https://extism.org) WASM plugin written in **TypeScript** (compiled
+with the [js-pdk](https://github.com/extism/js-pdk)). Core carries no experts
+logic; it loads and dispatches to this plugin.
 
-> **Status:** scaffold + design only. See [`DESIGN.md`](DESIGN.md) for the full
-> migration plan and the open questions to resolve before implementation. This
-> repo does not yet build a working plugin; `src/lib.rs` is a manifest stub.
+## What this plugin provides
 
-## What this plugin will provide
+- **MCP tools** (via the `mcp_tools` manifest field + the `mcp.tool.invoke`
+  hook): `spin_up_experts`, `list_experts`, `ask_expert`, `pm_record_decision`,
+  `pm_check_decisions`, `pm_escalate_to_user`.
+- **Authenticated app-UI endpoints** (`http.request.authed` hook + `ui_routes`,
+  served under `/api/plugin-ui/*`): the experts list and the PM
+  decisions / answer / edit endpoints, run under the user's authority.
+- **Hooks it handles:** `mcp.tool.invoke`, `http.request.before` (the served
+  Experts page), `http.request.authed`, and `session.user.answer` (feeds the
+  question expert when a user answers a worker's question).
 
-- **MCP tools:** `spin_up_experts`, `list_experts`, `ask_expert`,
-  `pm_record_decision`, `pm_check_decisions`, `pm_escalate_to_user`
-  (via the proposed `mcp_tools` manifest field + `mcp.tool.invoke` hook).
-- **Sidebar item:** an "Experts" entry in the left rail (via the proposed
-  `sidebar_items` manifest field).
-- **UI pages:** the experts list + PM expert views, served under
-  `/plugin-api/v1/...`.
-
-## Requires (new) core platform capabilities
-
-This plugin depends on generic platform extensions that do **not exist in core
-yet** — they are the subject of Phase A in `DESIGN.md`:
-
-- Plugin-provided MCP tools (`mcp_tools` manifest + `mcp.tool.invoke` hook).
-- `sidebar_items` manifest field + rail rendering.
-- New host functions (session create/dispatch/resume, event append, document
-  store, broadcast) — see `DESIGN.md` §4.3.
-- A WASM `permissions` manifest field wired into the approval prompt.
+"Expert-ness" is the plugin's own per-session metadata (kind / area / scope /
+summary), never a core column. PM decisions and the one-shot supersession grants
+live in the plugin's document store (`pm_decisions` / `pm_grants` collections).
 
 ## Layout
 
 ```
-DESIGN.md         Full migration design & open questions (read this first)
-Cargo.toml        Extism PDK crate (cdylib → wasm32-unknown-unknown)
-src/lib.rs        Plugin entry points (manifest/init/handle/shutdown) — STUB
-build.sh          Build the .wasm
-web/              (later) the experts UI bundle served at /plugin-api/*
+DESIGN.md         Migration design & open questions
+src/index.ts      Wasm entry points (manifest/init/shutdown/handle)
+src/lib.ts        Hook dispatch
+src/host.ts       Host-function wrappers (peckboard_* via Extism memory marshaling)
+src/manifest.ts   The plugin manifest (tools, hooks, permissions, ui_routes)
+src/experts.ts    Knowledge experts: spin-up, partitioning, list, resolve
+src/ask.ts        ask_expert (consult / reply)
+src/pm.ts         PM expert: tools, decision store, authorization grants
+src/http.ts       Served Experts page + authenticated /api/plugin-ui endpoints
+src/verdict.ts    allow / cancel / skip / response helpers
+src/index.d.ts    Wasm interface for extism-js (exports + host imports)
+test/             vitest unit tests for the pure logic
 ```
 
-## Build (once implemented)
+## Build
+
+Requires Node + the [`extism-js`](https://github.com/extism/js-pdk) compiler on
+`PATH`.
 
 ```bash
-./build.sh   # → target/wasm32-unknown-unknown/release/peckboard_experts_plugin.wasm
+./build.sh        # esbuild bundles src/ → dist/index.js, then extism-js → dist/plugin.wasm
+npm test          # vitest unit tests
 ```
+
+The compiled `dist/plugin.wasm` is loaded by the Peckboard core host; the
+end-to-end test lives in the core repo at `tests/experts_plugin.rs` and drives
+the real wasm through every tool and endpoint.

@@ -1,10 +1,22 @@
 #!/usr/bin/env bash
-# Build the Peckboard experts plugin to a WASM module.
-# Output: target/wasm32-unknown-unknown/release/peckboard_experts_plugin.wasm
+# Build the Peckboard experts plugin to a WASM module via the Extism js-pdk.
+# esbuild bundles src/index.ts -> dist/index.js, then extism-js compiles it
+# to dist/plugin.wasm.
+#
+# Output: dist/plugin.wasm
+#
+# Requires `extism-js` on PATH (e.g. ~/bin) and Node/npm.
 set -euo pipefail
 cd "$(dirname "$0")"
-rustup target add wasm32-unknown-unknown >/dev/null 2>&1 || true
-cargo build --target wasm32-unknown-unknown --release
-WASM="target/wasm32-unknown-unknown/release/peckboard_experts_plugin.wasm"
+
+# Install deps on first run (or when node_modules is missing).
+if [ ! -d node_modules ]; then
+  echo "Installing npm dependencies..."
+  npm install
+fi
+
+npm run build
+
+WASM="dist/plugin.wasm"
 echo "Built: $WASM"
 ls -lh "$WASM"
