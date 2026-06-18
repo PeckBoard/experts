@@ -1,0 +1,19 @@
+[package]
+name = "peckboard-experts-plugin"
+version = "0.1.0"
+edition = "2024"
+description = "Experts feature for Peckboard (knowledge / question / PM experts, MCP tools, and UI), served as a WASM plugin."
+repository = "https://github.com/PeckBoard/experts"
+license = "MIT"
+publish = false
+
+[lib]
+# Extism loads plugins as WASM cdylibs. Artifact:
+# target/wasm32-unknown-unknown/release/peckboard_experts_plugin.wasm
+crate-type = ["cdylib"]
+
+[dependencies]
+# Must stay major-version compatible with the host runtime Peckboard embeds.
+extism-pdk = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
