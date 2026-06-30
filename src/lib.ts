@@ -5,6 +5,7 @@
 import { allow, cancel, skip } from "./verdict";
 import { spinUpExperts, listExperts, loadExperts } from "./experts";
 import { askExpert } from "./ask";
+import { recordExpertBrief, readExpertBrief } from "./brief";
 import {
   pmRecordDecision,
   pmCheckDecisions,
@@ -69,6 +70,12 @@ function handleInvoke(payload: any): string {
         break;
       case "ask_expert":
         value = askExpert(args, ctx);
+        break;
+      case "record_expert_brief":
+        value = recordExpertBrief(args, ctx);
+        break;
+      case "read_expert_brief":
+        value = readExpertBrief(args, ctx);
         break;
       case "pm_record_decision":
         value = pmRecordDecision(args, ctx);

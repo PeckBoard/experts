@@ -438,7 +438,12 @@ export function buildCapturePrompt(part: Partition): string {
     `You are a knowledge expert for ${part.area}. Your scope is: ${part.dirs.join(", ")}. ` +
     "Eagerly read the files in your scope now and build a durable understanding of how this code works — " +
     "its responsibilities, key types, control flow, and gotchas — so you can answer questions about it later via ask_expert. " +
-    "Do not modify anything; you are read-only."
+    "Do not modify anything; you are read-only.\n\n" +
+    "When you have finished reading, call `record_expert_brief` with a COMPACT written brief of your scope " +
+    "(responsibilities, key files and types, important control flow, and gotchas) — keep it tight enough that " +
+    "another worker can act from it without re-reading everything. Workers read this brief cheaply instead of " +
+    "consulting you live, so it is your most important deliverable. Refresh it with `record_expert_brief` " +
+    "whenever your scope changes materially."
   );
 }
 

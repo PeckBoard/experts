@@ -106,6 +106,51 @@ export function manifestJson(): string {
         },
       },
       {
+        name: "read_expert_brief",
+        title: "Read expert brief",
+        description:
+          "Get a knowledge expert's DISTILLED written brief SYNCHRONOUSLY — a cheap, one-call way to orient yourself in the codebase. Prefer this over reading files broadly or a two-turn ask_expert when you just need context. Pass `area`/`expert_id` for one expert's brief, or neither to get every in-scope expert's brief at once. If a brief isn't recorded yet, the note tells you to fall back to ask_expert.",
+        input_schema: {
+          type: "object",
+          properties: {
+            area: {
+              type: "string",
+              description:
+                "Topic/area hint to pick one expert's brief (optional).",
+            },
+            expert_id: {
+              type: "string",
+              description:
+                "Explicit expert session id (optional; takes precedence over area).",
+            },
+          },
+          additionalProperties: false,
+        },
+      },
+      {
+        name: "record_expert_brief",
+        title: "Record expert brief",
+        description:
+          "KNOWLEDGE EXPERTS ONLY: persist your distilled understanding of your scope as a compact written brief (responsibilities, key files/types, control flow, gotchas). Other sessions read it cheaply via read_expert_brief instead of consulting you live. Call this at the end of your capture run and refresh it when your scope changes materially. The brief is keyed to your own session.",
+        input_schema: {
+          type: "object",
+          properties: {
+            brief: {
+              type: "string",
+              description:
+                "The distilled brief (markdown). Keep it compact — a worker should be able to act from it without re-reading the whole scope.",
+            },
+            area: {
+              type: "string",
+              description:
+                "Optional area label; normally taken from your expert metadata.",
+            },
+          },
+          required: ["brief"],
+          additionalProperties: false,
+        },
+      },
+      {
         name: "pm_record_decision",
         title: "Record PM decision",
         description:
