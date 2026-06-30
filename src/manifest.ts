@@ -6,7 +6,7 @@
 
 const DESCRIPTION =
   "Experts feature for Peckboard (knowledge / question / PM experts, MCP tools, and UI), served as a WASM plugin.";
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 const REPOSITORY = "https://github.com/PeckBoard/experts";
 
 /// Build the manifest JSON string. `index.ts`'s `manifest()` export wraps this.
